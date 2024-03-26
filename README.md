@@ -33,7 +33,7 @@ I'm starting basic, but over time I'm aiming to bring in other projects I'm work
 
 At the moment, the only people likely to be vaguely interested in this are those with some development skills in either python or node.js or maybe both. Feel free to play, and give me some feedback.
 
-[![Simple Chatblox Demo](./doc/assets/chatblox-eg-video-still-frame.png)](./doc/assets/chatblox-eg-video.mp4)
+[![Simple Chatblox Demo](./doc/assets/chatblox-eg-video-still-frame.png)](https://github.com/storizzi/chatblox/raw/main/doc/assets/chatblox-eg-video.mp4)
 
 ## Getting Started
 
