@@ -1,0 +1,76 @@
+[
+    {
+        "key": "gitPull",
+        "type": "bash",
+        "title": "Git Pull",
+        "regex": "^git pull (.+)$",
+        "process": "gitPull.sh $1",
+        "usage": "git pull [directory] - Perform a git pull in the specified directory",
+        "parameters": [
+            {
+                "name": "directory",
+                "title": "Git Repository Directory",
+                "type": "string",
+                "required": true
+            }
+        ]
+    },
+    {
+        "key": "help",
+        "type": "node",
+        "title": "Display Help",
+        "regex": "^help$",
+        "process": "help.js",
+        "usage": "help - Display a list of available commands"
+    },
+    {
+        "key": "checkChromeTab",
+        "type": "osascript",
+        "title": "Check Chrome Tab",
+        "regex": "^check chrome tab (.+)$",
+        "process": "checkTab.scpt",
+        "hooks": ["chromeTabCheck"],
+        "internal": true,
+        "usage": "check chrome tab [tabName] - Check if a Chrome tab with the specified name is open",
+        "parameters": [
+            {
+                "name": "tabName",
+                "title": "Tab Name",
+                "type": "string",
+                "required": true
+            }
+        ]
+    },
+    {
+        "key": "weather",
+        "type": "node",
+        "title": "Get Weather",
+        "regex": "^weather (.+)$",
+        "process": "getWeather.js $1",
+        "usage": "weather [location] - Get weather information for the specified location",
+        "parameters": [
+            {
+                "name": "location",
+                "title": "Location Name",
+                "type": "string",
+                "required": true
+            }
+        ]
+    },
+    {
+        "key": "commandDetails",
+        "type": "node",
+        "title": "Get Command Details",
+        "regex": "^help (.+)$",
+        "process": "commandDetails.js $1",
+        "usage": "help [commandKey] - Get details about the specified command",
+        "parameters": [
+            {
+                "name": "commandKey",
+                "title": "Command Key",
+                "type": "string",
+                "required": true
+            }
+        ]
+    }
+]

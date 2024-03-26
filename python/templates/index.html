@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Terminal</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="chat">
+    </div>
+    <div id="welcome-message">
+        Start typing here - e.g. 'help'
+        <div class="down-arrow"></div>
+    </div>
+    <input type="text" id="input" autofocus>
+    <script>
+        const chatDiv = document.getElementById('chat');
+        const inputField = document.getElementById('input');
+        let commandHistory = [];
+        let currentHistoryIndex = -1;
+        let currentInput = '';
+
+        inputField.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                const welcomeMessage = document.getElementById('welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = 'none';
+                }
+                const input = this.value;
+                commandHistory.push({ command: input, isError: false }); // Default to false; update later based on response
+                currentHistoryIndex = commandHistory.length;
+                currentHistoryIndex = commandHistory.length; // Reset history index
+                this.value = '';
+
+                // Create a container div for user and server messages
+                const messageContainer = document.createElement('div');
+                messageContainer.classList.add('message-container');
+
+                // Display user input in the chat
+                const userMessage = document.createElement('div');
+                userMessage.textContent = `> ${input}`;
+                messageContainer.appendChild(userMessage);
+
+                chatDiv.appendChild(messageContainer);
+
+                // Send input to server
+                fetch('/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input }),
+                })
+                .then(response => response.json()) // parse JSON response
+                .then(data => {
+                    // Determine CSS class for styling based on response type
+                    let messageClass = '';
+                    if (data.type === 'Output') {
+                        messageClass = 'output-message';
+                    } else if (data.type === 'Error') {
+                        messageClass = 'error-message';
+                    }
+
+                    // Display server response in the chat
+                    const serverMessage = document.createElement('pre');
+                    serverMessage.textContent = data.message;
+
+                    if (messageClass) {
+                        serverMessage.classList.add(messageClass); // Add the appropriate CSS class
+                    }
+
+                    messageContainer.appendChild(serverMessage);
+
+                    // Add spacing div after the message container
+                    const spacingDiv = document.createElement('div');
+                    spacingDiv.classList.add('spacing');
+                    chatDiv.appendChild(spacingDiv);
+
+                    // Scroll to the bottom of the chat
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+
+                    // Update the last command in history with the correct status
+                    const lastCommandIndex = commandHistory.length - 1;
+                    commandHistory[lastCommandIndex].isError = data.type === 'Error';
+                });
+
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault(); // Prevent default to stop moving cursor
+
+                if (currentHistoryIndex > 0) {
+                    if (currentHistoryIndex === commandHistory.length) {
+                        currentInput = inputField.value;
+                    }
+                    currentHistoryIndex--;
+                }
+                if (currentHistoryIndex >= 0) {
+                    inputField.value = commandHistory[currentHistoryIndex].command;
+                    setInputColorBasedOnError(commandHistory[currentHistoryIndex].isError);
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault(); // Prevent default to stop moving cursor
+                if (currentHistoryIndex < commandHistory.length - 1) {
+                    currentHistoryIndex++;
+                    inputField.value = commandHistory[currentHistoryIndex].command;
+                    setInputColorBasedOnError(commandHistory[currentHistoryIndex].isError);
+                } else if (currentHistoryIndex === commandHistory.length - 1) {
+                    currentHistoryIndex++;
+                    inputField.value = currentInput;
+                    setInputColorBasedOnError(false);
+                }
+            } else {
+                setInputColorBasedOnError(false);
+            }
+        });
+
+        function setInputColorBasedOnError(isError) {
+        if (isError) {
+            inputField.classList.add('input-error');
+            inputField.classList.remove('input-success');
+        } else {
+            inputField.classList.add('input-success');
+            inputField.classList.remove('input-error');
+        }
+    }
+
+    </script>
+</body>
+</html>

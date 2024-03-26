@@ -1,0 +1,94 @@
+body {
+    background-color: #0d0d0d;
+    color: #33ff33;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#chat {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+#input {
+    border: none;
+    background-color: #1a1a1a;
+    color: #33ff33;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#input.input-error {
+    color: #ff3333; /* Red text for error input */
+}
+
+#input.input-success {
+    color: #33ff33; /* Green text for successful input */
+}
+
+#input:focus {
+    outline: none;
+}
+
+/* Blinking cursor effect */
+@keyframes blink {
+    50% {
+        border-color: transparent;
+    }
+}
+
+#input {
+    animation: blink 1s step-end infinite;
+    border-right: 2px solid #33ff33;
+}
+
+/* Styles for 'output-message' with enhanced bevel effect */
+.output-message {
+    padding: 10px;
+    background-color: #1a1a1a;
+    color: #fff; /* White text for better contrast */
+    border: 1px solid #333;
+    border-radius: 5px;
+    box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.1); /* Lighter shadow color */
+    margin: 5px 0;
+}
+
+/* Styles for 'error-message' */
+.error-message {
+    padding: 10px;
+    background-color: #1a1a1a;
+    color: #ff3333; /* Red text for error messages */
+    margin: 5px 0;
+}
+
+/* Style for the spacing element */
+.spacing {
+    margin-bottom: 20px; /* Adjust the margin as needed */
+}
+
+#welcome-message {
+    color: #33ff33;
+    text-align: left;
+    margin-bottom: 10px;
+    position: relative;
+    left: 5px;
+}
+
+.down-arrow {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #33ff33;
+    margin: 0 auto;
+    position: absolute;
+    left: 25px;
+    transform: translateX(-50%);
+}
