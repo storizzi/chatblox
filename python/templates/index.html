@@ -11,7 +11,11 @@
         Start typing here - e.g. 'help'
         <div class="down-arrow"></div>
     </div>
-    <input type="text" id="input" autofocus>
+    <div class="input-container">
+        <img src="{{ url_for('static', filename='chatblox_icon.webp') }}" alt="Chat Icon" class="input-icon">
+        <input type="text" id="input" autofocus>
+    </div>
+    
     <script>
         const chatDiv = document.getElementById('chat');
         const inputField = document.getElementById('input');

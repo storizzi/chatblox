@@ -13,14 +13,16 @@ Set up using:
 ```shell
 conda create --name chatblox
 conda activate chatblox
+conda install pip
 pip install flask python-dotenv
 ```
 
 Start using:
 
 ```shell
+cd chatblox/python
 conda activate chatblox
-python3 chatblox.py
+python chatblox.py
 ```
 
 If you have chrome installed, a browser window will be opened to (by default): http://localhost:3000

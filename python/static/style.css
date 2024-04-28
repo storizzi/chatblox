@@ -16,6 +16,7 @@ body {
 }
 
 #input {
+    flex-grow: 1;
     border: none;
     background-color: #1a1a1a;
     color: #33ff33;
@@ -23,6 +24,21 @@ body {
     width: 100%;
     box-sizing: border-box;
     font-family: 'Courier New', Courier, monospace;
+    height: 1.5em; /* Adjust as necessary to fit design */
+    border: none;
+    border-right: 2px solid #33ff33;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    background-color: #1a1a1a;
+}
+
+.input-icon {
+    height: 1.5em;
+    width: auto;
+    margin-right: 10px;
 }
 
 #input.input-error {
@@ -42,11 +58,6 @@ body {
     50% {
         border-color: transparent;
     }
-}
-
-#input {
-    animation: blink 1s step-end infinite;
-    border-right: 2px solid #33ff33;
 }
 
 /* Styles for 'output-message' with enhanced bevel effect */
@@ -76,9 +87,12 @@ body {
 #welcome-message {
     color: #33ff33;
     text-align: left;
-    margin-bottom: 10px;
-    position: relative;
-    left: 5px;
+    padding: 10px;
+    margin-bottom: 5px; /* Space between the message and the input box */
+    position: relative; /* Add this to make it a positioning context */
+    display: flex; /* Use flexbox for better alignment */
+    align-items: center; /* Vertically center the contents */
+    left: 8px;
 }
 
 .down-arrow {
@@ -87,8 +101,8 @@ body {
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
     border-top: 20px solid #33ff33;
-    margin: 0 auto;
-    position: absolute;
-    left: 25px;
-    transform: translateX(-50%);
+    position: absolute; /* Keeps it absolutely positioned */
+    left: 35px; /* Updated left position */
+    bottom: -10px; /* Adjust this to position the arrow below the message */
+    transform: translateX(-50%); /* Center the arrow relative to the left position */
 }

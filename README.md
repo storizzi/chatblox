@@ -1,5 +1,7 @@
 # Chatblox
 
+![Chatblox Logo](./doc/assets/chatblox_icon.webp)
+
 ## Links
 
 * [README page on github](https://github.com/storizzi/chatblox/README.md)
@@ -37,11 +39,11 @@ At the moment, the only people likely to be vaguely interested in this are those
 
 ## Getting Started
 
-You can use either the node or the python version of Chatblox - they are functionally equivalent, so it really depends on your preference.
+You can use either the node or the python version of Chatblox - they are functionally equivalent, so just choose whichever you prefer.
 
 * [Node version README](./node/README.md)
 * [Python version README](./python/README.md)
-* [Command Summary](./doc/LLM_SUMMARY_commands.md) - LLM Generated - shared by both version
+* [Command Summary](./doc/LLM_SUMMARY_commands.md) - LLM Generated - shared by both versions
 
 In essence, both do the same thing - they execute external command in a structured way, and they share the same .env file structure (or environment variables that can be passed), and the same structure of commands.json which gives a list of available commands, with the commands inside the 'commands' folder and the settings files (like an .env file for each script) inside the script-settings folder.
 
