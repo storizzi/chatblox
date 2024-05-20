@@ -1,8 +1,8 @@
-# Release 0.1.0
+# Release 0.0.1
 
 ## General Information
 
-* Version: 0.1.0
+* Version: 0.0.1
 * Release Date: 26 Mar 2024
 * Build ID: 1
 * Summary: First MVP Release with Python + Node.js versions and sample scripts
