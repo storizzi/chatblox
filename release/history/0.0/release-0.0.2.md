@@ -1,8 +1,8 @@
-# Release 0.1.1
+# Release 0.0.2
 
 ## General Information
 
-* Version: 0.1.1
+* Version: 0.0.2
 * Release Date: 20 May 2024
 * Build ID: 2
 * Summary: Update node.js package versions and python instructions, and add a new logo on LHS of text box and background
