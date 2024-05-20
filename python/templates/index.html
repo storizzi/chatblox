@@ -6,6 +6,7 @@
 </head>
 <body>
     <div id="chat">
+        <img src="{{ url_for('static', filename='chatblox_icon_transparent.png') }}" alt="Background" class="chat-background">
     </div>
     <div id="welcome-message">
         Start typing here - e.g. 'help'
@@ -15,7 +16,7 @@
         <img src="{{ url_for('static', filename='chatblox_icon.webp') }}" alt="Chat Icon" class="input-icon">
         <input type="text" id="input" autofocus>
     </div>
-    
+
     <script>
         const chatDiv = document.getElementById('chat');
         const inputField = document.getElementById('input');
@@ -72,6 +73,8 @@
                         serverMessage.classList.add(messageClass); // Add the appropriate CSS class
                     }
 
+                    serverMessage.classList.add("message-style");
+                    
                     messageContainer.appendChild(serverMessage);
 
                     // Add spacing div after the message container

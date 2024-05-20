@@ -4,6 +4,8 @@
 
 # Installation / Start Up
 
+`cd node/src`
+
 Set up using using `npm i`
 
 Start up using `npm start`

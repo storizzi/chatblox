@@ -6,6 +6,7 @@
 </head>
 <body>
     <div id="chat">
+        <img src="chatblox_icon_transparent.png" alt="Background" class="chat-background">
     </div>
     <div id="welcome-message">
         Start typing here - e.g. 'help'
@@ -70,6 +71,7 @@
                     if (messageClass) {
                         serverMessage.classList.add(messageClass); // Add the appropriate CSS class
                     }
+                    serverMessage.classList.add("message-style");
 
                     messageContainer.appendChild(serverMessage);
 

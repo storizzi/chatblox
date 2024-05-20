@@ -2,7 +2,7 @@
 
 ## General Information
 
-* Version - 0.1.0
+* Version: 0.1.0
 * Release Date: 26 Mar 2024
 * Build ID: 1
 * Summary: First MVP Release with Python + Node.js versions and sample scripts
@@ -13,7 +13,7 @@ This is the first release which is very very early. It is an MVP which does at l
 
 Note that the 'commands' directory contains the same commands in both the node + python version to demonstrate both versions can run the same scripts.
 
-Minimal documentation. License information.
+Minimal documentation. License information. Unfortunately I forgot to change it from private to public repo!
 
 ## Commit History
 

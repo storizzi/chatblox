@@ -16,7 +16,7 @@ async function getWeather(location) {
         }
     } catch (error) {
         console.error(error);
-        return 'Failed to retrieve weather data.';
+        return 'Failed to retrieve weather data.\n\n'+error.message;
     }
 }
 

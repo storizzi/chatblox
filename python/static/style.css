@@ -15,12 +15,23 @@ body {
     padding: 10px;
 }
 
+.chat-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.14; /* Set transparency to 20% */
+    z-index: -1; /* Ensure it stays behind the text */
+    filter: blur(8px); /* Apply blur effect */
+}
+
 #input {
     flex-grow: 1;
     border: none;
     background-color: #1a1a1a;
     color: #33ff33;
-    padding: 10px;
+    padding: 0px;
     width: 100%;
     box-sizing: border-box;
     font-family: 'Courier New', Courier, monospace;
@@ -38,7 +49,7 @@ body {
 .input-icon {
     height: 1.5em;
     width: auto;
-    margin-right: 10px;
+    margin-right: 5px;
 }
 
 #input.input-error {
@@ -60,23 +71,25 @@ body {
     }
 }
 
+.message-style {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #333;
+    box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.1); /* Lighter shadow color */
+    opacity: 0.70; /* Set transparency to 20% */
+}
+
 /* Styles for 'output-message' with enhanced bevel effect */
 .output-message {
-    padding: 10px;
-    background-color: #1a1a1a;
     color: #fff; /* White text for better contrast */
-    border: 1px solid #333;
-    border-radius: 5px;
-    box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.1); /* Lighter shadow color */
-    margin: 5px 0;
+    background-color: #1a1a1a;
 }
 
 /* Styles for 'error-message' */
 .error-message {
-    padding: 10px;
-    background-color: #1a1a1a;
-    color: #ff3333; /* Red text for error messages */
-    margin: 5px 0;
+    color: #ff3333;
+    background-color: #472525;
 }
 
 /* Style for the spacing element */
@@ -92,7 +105,7 @@ body {
     position: relative; /* Add this to make it a positioning context */
     display: flex; /* Use flexbox for better alignment */
     align-items: center; /* Vertically center the contents */
-    left: 8px;
+    left: -1px;
 }
 
 .down-arrow {
@@ -102,7 +115,7 @@ body {
     border-right: 20px solid transparent;
     border-top: 20px solid #33ff33;
     position: absolute; /* Keeps it absolutely positioned */
-    left: 35px; /* Updated left position */
-    bottom: -10px; /* Adjust this to position the arrow below the message */
+    left: 30px; /* Updated left position */
+    bottom: -9px; /* Adjust this to position the arrow below the message */
     transform: translateX(-50%); /* Center the arrow relative to the left position */
 }
