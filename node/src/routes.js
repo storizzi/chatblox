@@ -37,14 +37,14 @@ const sendResponse = (res, error, stdout) => {
     }
 };
 
-module.exports = (app, config, plugins, executeScript, processHook, baseDir) => {
+module.exports = (app, config, executeScript, processHook, baseDir) => {
     app.post('/execute', async (req, res) => {
         const userInput = req.body.input;
 
         // Hook: intercept request
-        await processHook(plugins, 'interceptRequest', { req, res, userInput });
+        await processHook(config.getPlugins(), 'interceptRequest', { req, res, userInput, config });
 
-        const matchedCommand = config.commands.find(cmd => new RegExp(cmd.regex).test(userInput));
+        const matchedCommand = config.getCommands().find(cmd => new RegExp(cmd.regex).test(userInput));
 
         if (matchedCommand) {
             const parameters = userInput.match(new RegExp(matchedCommand.regex)).slice(1);
@@ -56,7 +56,7 @@ module.exports = (app, config, plugins, executeScript, processHook, baseDir) => 
             }
 
             try {
-                const result = await executeScript(matchedCommand, parameters, baseDir);
+                const result = await executeScript(matchedCommand, parameters, baseDir, config);
                 sendResponse(res, result.error, result.stdout);
             } catch (error) {
                 sendResponse(res, error, null);
@@ -65,7 +65,7 @@ module.exports = (app, config, plugins, executeScript, processHook, baseDir) => 
             // Define parameters as an empty object for unrecognized commands
             const parameters = {};
             // Try processing through plugins
-            const hookResult = await processHook(plugins, userInput, { data: null, parameters });
+            const hookResult = await processHook(config.getPlugins(), userInput, { data: null, parameters, config });
             if (hookResult.changed) {
                 sendResponse(res, null, hookResult.data);
             } else {
@@ -74,7 +74,7 @@ module.exports = (app, config, plugins, executeScript, processHook, baseDir) => 
         }
 
         // Hook: intercept response
-        await processHook(plugins, 'interceptResponse', { req, res, userInput });
+        await processHook(config.getPlugins(), 'interceptResponse', { req, res, userInput, config });
     });
 
     // Serve the chat interface

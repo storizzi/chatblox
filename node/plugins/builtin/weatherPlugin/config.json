@@ -13,13 +13,15 @@
   },
   "commands": [
     {
-      "key": "getWeather",
-      "regex": "^get weather for (.+)$",
-      "type": "node",
-      "process": "weatherPlugin.js",
+      "key": "weather",
+      "regex": "^weather (.+)$",
+      "type": "plugin",
+      "process": "getWeather",
+      "usage": "weather [location] - Get weather information for the specified location",
       "parameters": [
         {
           "name": "location",
+          "title": "Location Name",
           "type": "string",
           "required": true
         }

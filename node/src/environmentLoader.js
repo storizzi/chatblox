@@ -28,6 +28,7 @@ function loadEnvFromDirs(dirs, basePath = __dirname) {
             });
         }
     });
+    // console.log(JSON.stringify(mergedSettings, null, 2));
     return mergedSettings;
 }
 

@@ -16,14 +16,6 @@
         ]
     },
     {
-        "key": "help",
-        "type": "node",
-        "title": "Display Help",
-        "regex": "^help$",
-        "process": "help.js",
-        "usage": "help - Display a list of available commands"
-    },
-    {
         "key": "checkChromeTab",
         "type": "osascript",
         "title": "Check Chrome Tab",
@@ -52,22 +44,6 @@
             {
                 "name": "location",
                 "title": "Location Name",
-                "type": "string",
-                "required": true
-            }
-        ]
-    },
-    {
-        "key": "commandDetails",
-        "type": "node",
-        "title": "Get Command Details",
-        "regex": "^help (.+)$",
-        "process": "commandDetails.js $1",
-        "usage": "help [commandKey] - Get details about the specified command",
-        "parameters": [
-            {
-                "name": "commandKey",
-                "title": "Command Key",
                 "type": "string",
                 "required": true
             }

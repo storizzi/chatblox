@@ -1,0 +1,23 @@
+{
+  "id": "helpPlugin",
+  "initialization": {
+    "import": {
+      "fileName": "helpPlugin.js",
+      "name": "initialize"
+    }
+  },
+  "hooks": {},
+  "commands": [
+    {
+      "key": "help",
+      "regex": "^help$",
+      "type": "plugin",
+      "process": "showHelp",
+      "usage": "help - Display a list of available commands",
+      "parameters": [],
+      "enabled": true,
+      "source": "plugin:helpPlugin"
+    }
+  ],
+  "enabled": true
+}

@@ -14,7 +14,7 @@ const execCommand = async (command, scriptSettings) => {
     }
 };
 
-const executeNodeScript = async (scriptPath, parameters, scriptSettings, attempts = 0) => {
+const executeNodeScript = async (scriptPath, parameters, scriptSettings) => {
     const commandToRun = `node ${scriptPath} ${parameters.join(' ')}`;
     return execCommand(commandToRun, scriptSettings);
 };
@@ -31,11 +31,34 @@ const executeBashScript = async (scriptPath, parameters, scriptSettings) => {
 
 const wrapInQuotes = param => `"${param.replace(/"/g, '\\"')}"`;
 
-const executeScript = async (commandConfig, parameters, baseDir) => {
-    const scriptFile = commandConfig.process.split(' ')[0];
-    const scriptPath = path.join(baseDir, 'commands', scriptFile);
+const executeInMemoryFunction = async ({ commandConfig, parameters, baseDir, config }) => {
+    try {
+        const pluginId = commandConfig.source.split(':')[1];
+        const plugin = config.getPlugins()[pluginId];
+        const pluginFunction = plugin.imports[commandConfig.process.split(' ')[0]];
+        if (!pluginFunction) {
+            throw new Error(`Function '${commandConfig.process.split(' ')[0]}' not found in plugin '${pluginId}'`);
+        }
+        const result = await pluginFunction({ commandConfig, parameters, baseDir, config });
+        return { error: null, stdout: result };
+    } catch (error) {
+        console.log(`Error executing in-memory function: ${error.message}`);
+        return { error, stdout: null };
+    }
+};
+
+const executeScript = async (commandConfig, parameters, baseDir, config) => {
+    let scriptFile = commandConfig.process.split(' ')[0];
+    let scriptPath;
+
+    if (commandConfig.type === 'plugin') {
+        return executeInMemoryFunction({ commandConfig, parameters, baseDir, config });
+    } else {
+        scriptPath = path.join(baseDir, 'commands', scriptFile);
+    }
+
     const wrappedParameters = parameters.map(wrapInQuotes);
-    const scriptSettings = {}; // Load specific settings if needed
+    const scriptSettings = config.getEnvSettings(); // Load specific settings if needed
 
     switch (commandConfig.type) {
         case 'node':

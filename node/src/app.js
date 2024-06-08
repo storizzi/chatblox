@@ -42,7 +42,7 @@ const scriptSettingsDirs = (process.env.SCRIPT_SETTINGS_DIRS || '')
     .map(dir => resolveAppPath(dir))
     .filter(dir => dir);
 const envSettings = loadEnvFromDirs(scriptSettingsDirs);
-process.env = { ...process.env, ...envSettings };
+config.addEnvSettings(envSettings);
 
 let plugins = {};
 
@@ -71,6 +71,7 @@ const autoLoadPlugins = process.env.AUTOLOAD_PLUGINS === 'true';
 const initialize = async () => {
     if (autoLoadPlugins) {
         plugins = await initializePlugins(pluginDirs);
+        config.addPlugins(plugins);
         for (const pluginId in plugins) {
             if (plugins[pluginId].enabled) {
                 mergePluginConfigIntoCommands(plugins[pluginId].config);
@@ -81,10 +82,10 @@ const initialize = async () => {
 
 initialize().then(async () => {
     if (isDebugMode) {
-        await processHook(plugins, 'showDebugInfo', { config, plugins, env: process.env });
+        await processHook(config.getPlugins(), 'showDebugInfo', { config });
     }
 
-    routes(app, config, plugins, executeScript, processHook, appRoot); // Setup routes after initialization
+    routes(app, config, executeScript, processHook, appRoot); // Setup routes after initialization
 
     app.listen(port, async () => {
         console.log(`Server running in ${runEnv} at http://localhost:${port}`);
@@ -92,7 +93,7 @@ initialize().then(async () => {
         if (isDevMode) {
             const open = (await import('open')).default;
             try {
-                const hookResult = await processHook(plugins, 'chromeTabCheck', ['Chat Terminal']);
+                const hookResult = await processHook(config.getPlugins(), 'chromeTabCheck', { parameters: ['Chat Terminal'], config });
                 if (hookResult.data === 'false') {
                     open(`http://localhost:${port}`, { app: { name: 'google chrome' } });
                 }

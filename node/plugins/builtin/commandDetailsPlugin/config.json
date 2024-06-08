@@ -1,0 +1,29 @@
+{
+  "id": "commandDetailsPlugin",
+  "initialization": {
+    "import": {
+      "fileName": "commandDetailsPlugin.js",
+      "name": "initialize"
+    }
+  },
+  "hooks": {},
+  "commands": [
+    {
+      "key": "commandDetails",
+      "regex": "^help (.+)$",
+      "type": "plugin",
+      "process": "getCommandDetails",
+      "usage": "help [commandKey] - Get details about the specified command",
+      "parameters": [
+        {
+          "name": "commandKey",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "enabled": true,
+      "source": "plugin:commandDetailsPlugin"
+    }
+  ],
+  "enabled": true
+}
