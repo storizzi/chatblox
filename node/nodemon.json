@@ -1,4 +1,5 @@
 {
-    "watch": [ "*", "commands/*", "public/*", "src/*" ],
-    "ext": "js,json,html"
-  }
+  "watch": ["src", "commands", "plugins", "public", ".env"],
+  "ext": "js,json,html,properties",
+  "exec": "node -r dotenv/config src/app.js"
+}

@@ -1,0 +1,23 @@
+{
+    "id": "debugPlugin",
+    "initialization": {
+      "import": {
+        "fileName": "debugPlugin.js",
+        "name": "initialize"
+      }
+    },
+    "hooks": {
+      "showDebugInfo": [
+        "showDebugInfo"
+      ],
+      "interceptRequest": [
+        "interceptRequest"
+      ],
+      "interceptResponse": [
+        "interceptResponse"
+      ]
+    },
+    "commands": [],
+    "enabled": false
+  }
+  

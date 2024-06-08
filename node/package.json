@@ -4,8 +4,7 @@
   "description": "Chatblox lets you compose your productivity suite for your or your business through a chatbot interface",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,31 @@
+{
+  "id": "weatherPlugin",
+  "initialization": {
+    "import": {
+      "fileName": "weatherPlugin.js",
+      "name": "initialize"
+    }
+  },
+  "hooks": {
+    "getWeather": [
+      "getWeather"
+    ]
+  },
+  "commands": [
+    {
+      "key": "getWeather",
+      "regex": "^get weather for (.+)$",
+      "type": "node",
+      "process": "weatherPlugin.js",
+      "parameters": [
+        {
+          "name": "location",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "enabled": true
+    }
+  ],
+  "enabled": true
+}

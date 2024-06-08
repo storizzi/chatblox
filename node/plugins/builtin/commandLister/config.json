@@ -1,0 +1,21 @@
+{
+    "id": "commandLister",
+    "initialization": {
+        "import": {
+            "fileName": "commandLister.js",
+            "name": "initialize"
+        }
+    },
+    "hooks": {
+        "listCommands": ["listCommands"]
+    },
+    "commands": [
+        {
+            "key": "listCommands",
+            "regex": "^list commands$",
+            "type": "node",
+            "process": "commandLister.js",
+            "usage": "list commands - List all available commands"
+        }
+    ]
+}
