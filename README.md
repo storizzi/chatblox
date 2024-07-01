@@ -50,18 +50,22 @@ I have yet another concept that I have never found a good way of implementing ba
 
 No idea of timescales right now. I have created a big heap of PoCs, and this is where I start gluing them together. So please be patient.
 
-At the moment, the only people likely to be vaguely interested in this are those with some development skills in either python or node.js or maybe both. Feel free to play, and give me some feedback.
+At the moment, the only people likely to be vaguely interested in this are those with some development skills in node.js. Feel free to play, and give me some feedback.
 
 [![Simple Chatblox Demo](./doc/assets/chatblox-eg-video-still-frame.png)](https://github.com/storizzi/chatblox/assets/26940113/eb5a1d77-80d7-467c-a805-254e23cb4e79)
 
-## Getting Started
+# Installation / Start Up
 
-You can use either the node or the python version of Chatblox - they are functionally equivalent, so just choose whichever you prefer.
+* [Command Summary](./doc/LLM_SUMMARY_commands.md) - LLM Generated
 
-* [Node version README](./node/README.md)
-* [Python version README](./python/README.md)
-* [Command Summary](./doc/LLM_SUMMARY_commands.md) - LLM Generated - shared by both versions
+The types of commands cover shell, node.js
 
-In essence, both do the same thing - they execute external command in a structured way, and they share the same .env file structure (or environment variables that can be passed), and the same structure of commands.json which gives a list of available commands, with the commands inside the 'commands' folder and the settings files (like an .env file for each script) inside the script-settings folder.
+`cd node/src`
 
-The types of commands cover shell, node.js (and it auto-imports modules as necessary), and AppleScript. No, not even python even though there's a python version. Reason being, I started with Node and ported it over to python, because I'm not yet sure which code line I will be continuing with as both have pros and cons. So I'll continue developing them in parallel, and at some point, split them into their own repos or discontinue one of them.
+Set up using using `npm i`
+
+Start up using `npm start`
+
+If you have chrome installed, a browser window will be opened to (by default): http://localhost:3000
+
+The default port is 5001. Set the port number in the .env file or pass as an environment variable from the environment you are calling the script from - see `.env-sample` file as an example (which you would rename to .env to use it)
