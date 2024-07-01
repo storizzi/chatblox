@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
+const util = require('util');
 const { loadProperties } = require('./environmentLoader');
 
 const DEFAULT_PLUGIN_LOC_PATTERN = /^PLUGIN_LOC_(.+)$/;
@@ -59,6 +61,39 @@ function loadPluginsFromDir(directory) {
     return plugins;
 }
 
+const execCommand = async (command, cwd) => {
+    const execPromise = util.promisify(exec);
+    try {
+        const { stdout, stderr } = await execPromise(command, { cwd });
+        return { error: null, stdout: stdout ? stdout.trim() : "" };
+    } catch (error) {
+        return { error, stdout: null };
+    }
+};
+
+const installMissingModule = async (moduleName, cwd, attempts = 0) => {
+    console.log(`Attempting to install missing module '${moduleName}' in directory '${cwd}'...`);
+    
+    // Ensure package.json exists
+    const packageJsonPath = path.join(cwd, 'package.json');
+    if (!fs.existsSync(packageJsonPath)) {
+        console.log('Creating package.json in the plugin directory...');
+        fs.writeFileSync(packageJsonPath, JSON.stringify({ name: "plugin-modules", version: "1.0.0" }, null, 2));
+    }
+
+    const installCommand = `npm install ${moduleName}`;
+    try {
+        const result = await execCommand(installCommand, cwd);
+        if (result.error) {
+            throw result.error;
+        }
+        console.log(`Module '${moduleName}' installed successfully in directory '${cwd}'.`);
+    } catch (error) {
+        console.error(`Failed to install module '${moduleName}' in directory '${cwd}' after ${attempts + 1} attempts: ${error.message}`);
+        throw error;
+    }
+};
+
 async function importModule(filePath) {
     try {
         const importedModule = require(filePath);
@@ -78,14 +113,36 @@ async function processPluginImportsAndSetup(plugins) {
         if (config.initialization && config.initialization.import) {
             const importPath = path.join(pluginData.directory, config.initialization.import.fileName);
             const importName = config.initialization.import.name || "initialize";
-            const imports = await importModule(importPath);
-            pluginData.imports = imports;
+            
+            try {
+                let imports = await importModule(importPath);
+                pluginData.imports = imports;
 
-            if (imports && imports[importName] && typeof imports[importName] === 'function') {
-                pluginData.setupResults = await imports[importName]();
-                console.log(`Initialization method '${importName}' for plugin '${id}' called successfully.`);
-            } else {
-                console.log(`Initialization method '${importName}' not found for plugin '${id}'.`);
+                if (imports && imports[importName] && typeof imports[importName] === 'function') {
+                    pluginData.setupResults = await imports[importName]();
+                    console.log(`Initialization method '${importName}' for plugin '${id}' called successfully.`);
+                } else {
+                    console.log(`Initialization method '${importName}' not found for plugin '${id}'.`);
+                }
+            } catch (error) {
+                if (error.code === 'MODULE_NOT_FOUND') {
+                    const match = error.message.match(/Cannot find module '([^']+)'/);
+                    if (match) {
+                        const missingModule = match[1];
+                        await installMissingModule(missingModule, pluginData.directory);
+                        imports = await importModule(importPath);
+                        pluginData.imports = imports;
+
+                        if (imports && imports[importName] && typeof imports[importName] === 'function') {
+                            pluginData.setupResults = await imports[importName]();
+                            console.log(`Initialization method '${importName}' for plugin '${id}' called successfully after installing missing module.`);
+                        } else {
+                            console.log(`Initialization method '${importName}' not found for plugin '${id}' after installing missing module.`);
+                        }
+                    }
+                } else {
+                    console.error(`Error importing module ${importPath}:`, error);
+                }
             }
         }
     }

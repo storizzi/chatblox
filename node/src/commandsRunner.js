@@ -15,7 +15,7 @@ const execCommand = async (command, scriptSettings) => {
     }
 };
 
-const installMissingModule = async (moduleName, cwd, attempts) => {
+const installMissingModule = async (moduleName, cwd, attempts = 0) => {
     console.log(`Attempting to install missing module '${moduleName}' in directory '${cwd}'...`);
     
     // Ensure package.json exists
@@ -74,7 +74,31 @@ const executeBashScript = async (scriptPath, parameters, scriptSettings) => {
     return execCommand(commandToRun, scriptSettings);
 };
 
-const executeInMemoryFunction = async ({ commandConfig, parameters, baseDir, config }) => {
+const installMissingModuleForPlugin = async (moduleName, pluginId, baseDir, attempts = 0) => {
+    const pluginDir = path.join(baseDir, 'plugins', 'builtin', pluginId);
+    console.log(`Attempting to install missing module '${moduleName}' for plugin '${pluginId}'...`);
+    
+    // Ensure package.json exists
+    const packageJsonPath = path.join(pluginDir, 'package.json');
+    console.log(`Checking if package.json exists at ${packageJsonPath}`);
+    if (!fs.existsSync(packageJsonPath)) {
+        console.log('Creating package.json in the plugin directory...');
+        fs.writeFileSync(packageJsonPath, JSON.stringify({ name: "plugin-modules", version: "1.0.0" }, null, 2));
+    }
+
+    const installCommand = `npm install ${moduleName}`;
+    try {
+        const execPromise = util.promisify(exec);
+        await execPromise(installCommand, { cwd: pluginDir });
+        console.log(`Module '${moduleName}' installed successfully for plugin '${pluginId}'.`);
+    } catch (error) {
+        console.error(`Failed to install module '${moduleName}' for plugin '${pluginId}' after ${attempts + 1} attempts: ${error.message}`);
+        throw error;
+    }
+};
+
+
+const executeInMemoryFunction = async ({ commandConfig, parameters, baseDir, config, attempts = 0 }) => {
     const pluginId = commandConfig.source.split(':')[1];
     const plugin = config.getPlugins()[pluginId];
     console.log(JSON.stringify(plugin, null, 2));
@@ -82,8 +106,22 @@ const executeInMemoryFunction = async ({ commandConfig, parameters, baseDir, con
     if (!pluginFunction) {
         throw new Error(`Function '${commandConfig.process}' not found in plugin '${pluginId}'`);
     }
-    const result = await pluginFunction({ commandConfig, parameters, baseDir, config });
-    return { error: null, stdout: result };
+    try {
+        const result = await pluginFunction({ commandConfig, parameters, baseDir, config });
+        if (result && typeof result === 'string' && result.match(/Cannot find (module|package) '([^']+)'/)) {
+            throw new Error(result);
+        }
+        return { error: null, stdout: result };
+    } catch (error) {
+        console.error('Caught error:', error.message);
+        const match = error.message.match(/Cannot find (module|package) '([^']+)'/);
+        if (match && attempts < parseInt(process.env.AUTOINSTALL_CMD_MODS_RETRIES) || 3) {
+            const missingModule = match[2];
+            await installMissingModuleForPlugin(missingModule, pluginId, baseDir, attempts);
+            return executeInMemoryFunction({ commandConfig, parameters, baseDir, config, attempts: attempts + 1 });
+        }
+        throw error;
+    }
 };
 
 const executeScript = async (commandConfig, parameters, baseDir, config) => {
@@ -99,9 +137,9 @@ const executeScript = async (commandConfig, parameters, baseDir, config) => {
         case 'node':
             return executeNodeScript(scriptPath, parameters, scriptSettings, config);
         case 'osascript':
-            return executeAppleScript(scriptPath, wrappedParameters, scriptSettings);
+            return executeAppleScript(scriptPath, parameters, scriptSettings);
         case 'bash':
-            return executeBashScript(scriptPath, wrappedParameters, scriptSettings);
+            return executeBashScript(scriptPath, parameters, scriptSettings);
         default:
             throw new Error('Command type not recognized');
     }

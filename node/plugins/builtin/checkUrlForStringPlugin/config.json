@@ -1,0 +1,36 @@
+{
+    "id": "checkUrlForStringPlugin",
+    "name": "Check URL for String Plugin",
+    "version": "1.0.0",
+    "enabled": true,
+    "commands": [
+        {
+            "key": "checkUrlForString",
+            "regex": "^check url (.+) (.+)$",
+            "type": "plugin",
+            "process": "getUrlStringCheck",
+            "usage": "check url <url> <string> - Check if the specified string is present in the content of the given URL",
+            "parameters": [
+                {
+                    "name": "url",
+                    "title": "URL",
+                    "type": "string",
+                    "required": true
+                },
+                {
+                    "name": "string",
+                    "title": "String to Match",
+                    "type": "string",
+                    "required": true
+                }
+            ],
+            "enabled": true
+        }
+    ],
+    "initialization": {
+        "import": {
+            "fileName": "checkUrlForStringPlugin.js",
+            "name": "initialize"
+        }
+    }
+}
