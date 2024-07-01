@@ -3,12 +3,11 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const Config = require('./config');
 const loadCommands = require('./commandsLoader');
-const { loadEnvFromDirs } = require('./environmentLoader');
+const { loadEnv, loadEnvFromDirs } = require('./environmentLoader');
 const { executeScript } = require('./commandsRunner');
 const { initializePlugins } = require('./pluginsLoader');
 const { processHook } = require('./pluginsRunner');
 const routes = require('./routes');
-const { loadEnv } = require('./loadEnv');
 
 // Load environment variables in the desired order
 loadEnv();
