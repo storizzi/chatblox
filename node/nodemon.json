@@ -1,5 +1,6 @@
 {
   "watch": ["src", "commands", "plugins", "public", ".env", "nodemon.json", "commands.json"],
   "ext": "js,json,html,properties",
+  "ignore": ["**/node_modules/**", "*/package.json", "*/package-lock.json"],
   "exec": "node -r dotenv/config src/app.js"
 }
