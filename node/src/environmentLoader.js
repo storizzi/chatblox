@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
+// Function to load environment variables from .env files
 const loadEnv = () => {
     const appRoot = path.resolve(__dirname, '..');
     const userHomeDir = require('os').homedir();
@@ -26,10 +27,12 @@ const loadEnv = () => {
     }
 };
 
+// Function to load properties from .properties files
 const loadProperties = (filePath) => {
     const properties = {};
     if (fs.existsSync(filePath)) {
         const content = fs.readFileSync(filePath, 'utf-8');
+        console.log(`Properties file ${filePath} loading...`);
         content.split('\n').forEach(line => {
             const [key, value] = line.split('=').map(part => part.trim());
             if (key && value) {
@@ -40,14 +43,15 @@ const loadProperties = (filePath) => {
     return properties;
 };
 
-const loadEnvFromDirs = (dirs, plugins) => {
+// Function to load environment variables from directories containing .properties files
+const loadEnvFromDirs = (dirs, entities) => {
     const env = {};
     dirs.forEach(dir => {
         if (fs.existsSync(dir) && fs.lstatSync(dir).isDirectory()) {
             fs.readdirSync(dir).forEach(file => {
                 if (file.endsWith('.properties')) {
-                    const pluginId = path.basename(file, '.properties');
-                    if (!plugins || plugins[pluginId]?.enabled) {
+                    const entityId = path.basename(file, '.properties');
+                    if (!entities || entities[entityId]?.enabled) {
                         Object.assign(env, loadProperties(path.join(dir, file)));
                     }
                 }

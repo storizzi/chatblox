@@ -37,20 +37,53 @@ const sendResponse = (res, error, stdout) => {
     }
 };
 
+const parseCommandInput = (input, regex) => {
+    const match = input.match(new RegExp(regex));
+    if (!match) return [];
+
+    const paramsString = match.slice(1).join(' ');
+    const params = [];
+    let current = '';
+    let quote = null;
+
+    for (let char of paramsString) {
+        if (char === '"' || char === "'") {
+            if (quote === null) {
+                quote = char;
+            } else if (quote === char) {
+                quote = null;
+                params.push(current + char); // Include closing quote
+                current = '';
+                continue;
+            }
+        }
+        if (quote === null && (char === ' ' && current !== '')) {
+            params.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    if (current !== '') {
+        params.push(current);
+    }
+
+    return params;
+};
+
 module.exports = (app, config, executeScript, processHook, baseDir) => {
     app.post('/execute', async (req, res) => {
         const userInput = req.body.input;
+        console.log(`Received Input: ${userInput}`); // Log input for debugging
 
         // Hook: intercept request
-        if (process.env.DEBUG === 'true') console.log("Intercepting request");
         await processHook(config.getPlugins(), 'interceptRequest', { req, res, userInput, config });
 
         const matchedCommand = config.getCommands().find(cmd => new RegExp(cmd.regex).test(userInput));
-        if (process.env.DEBUG === 'true') console.log("Matched Command:", matchedCommand);
 
         if (matchedCommand) {
-            const parameters = userInput.match(new RegExp(matchedCommand.regex)).slice(1);
-            if (process.env.DEBUG === 'true') console.log("Parameters:", parameters);
+            const parameters = parseCommandInput(userInput, matchedCommand.regex);
+            console.log(`Parsed Parameters: ${parameters}`); // Log parameters for debugging
             const validation = validateParameters(parameters, matchedCommand.parameters || []);
 
             if (!validation.isValid) {
@@ -60,10 +93,8 @@ module.exports = (app, config, executeScript, processHook, baseDir) => {
 
             try {
                 const result = await executeScript(matchedCommand, parameters, baseDir, config);
-                if (process.env.DEBUG === 'true') console.log("Execution Result:", result);
                 sendResponse(res, result.error, result.stdout);
             } catch (error) {
-                if (process.env.DEBUG === 'true') console.log("Execution Error:", error);
                 sendResponse(res, error, null);
             }
         } else {
@@ -79,7 +110,6 @@ module.exports = (app, config, executeScript, processHook, baseDir) => {
         }
 
         // Hook: intercept response
-        if (process.env.DEBUG === 'true') console.log("Intercepting response");
         await processHook(config.getPlugins(), 'interceptResponse', { req, res, userInput, config });
     });
 
