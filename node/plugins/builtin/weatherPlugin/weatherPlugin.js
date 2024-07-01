@@ -1,6 +1,6 @@
-async function getWeather({ parameters, env }) {
+async function getWeather({ parameters, config }) {
+    const apiKey = config.envSettings.OPENWEATHER_API_KEY;
     const location = parameters[0];
-    const apiKey = env.OPENWEATHER_API_KEY;
     const url = `http://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${apiKey}&units=metric`;
 
     try {
@@ -22,8 +22,11 @@ async function getWeather({ parameters, env }) {
 }
 
 async function initialize() {
-    console.log('Weather plugin initialized');
-    return true; // Return true if initialization is successful
+    console.log("Weather plugin initialized");
+    return true;
 }
 
-module.exports = { getWeather, initialize };
+module.exports = {
+    getWeather,
+    initialize
+};

@@ -3,7 +3,6 @@ const path = require('path');
 const { loadProperties } = require('./environmentLoader');
 
 const DEFAULT_PLUGIN_LOC_PATTERN = /^PLUGIN_LOC_(.+)$/;
-const DEFAULT_PLUGINS_LOC_PATTERN = /^PLUGINS_LOC(\d*)$/;
 
 function readPluginConfig(directory) {
     const configFile = path.join(directory, 'config.json');
@@ -40,7 +39,7 @@ function loadPluginsFromEnv(pluginLocPattern) {
 }
 
 function loadPluginsFromDir(directory) {
-    let plugins = new Map();
+    let plugins = {};
 
     fs.readdirSync(directory, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
@@ -49,11 +48,11 @@ function loadPluginsFromDir(directory) {
             const config = readPluginConfig(subdir);
 
             if (config && config.id) {
-                plugins.set(config.id, {
+                plugins[config.id] = {
                     directory: subdir,
                     config: config,
                     enabled: true
-                });
+                };
             }
         });
 
@@ -63,7 +62,7 @@ function loadPluginsFromDir(directory) {
 async function importModule(filePath) {
     try {
         const importedModule = require(filePath);
-        return importedModule;
+        return importedModule.default || importedModule;
     } catch (error) {
         console.error(`Error importing module ${filePath}:`, error);
         return null;
@@ -92,15 +91,12 @@ async function processPluginImportsAndSetup(plugins) {
     }
 }
 
-async function initializePlugins(pluginDirs, pluginLocPattern = DEFAULT_PLUGIN_LOC_PATTERN, pluginsLocPattern = DEFAULT_PLUGINS_LOC_PATTERN) {
+async function initializePlugins(pluginDirs, pluginLocPattern = DEFAULT_PLUGIN_LOC_PATTERN) {
     let plugins = loadPluginsFromEnv(pluginLocPattern);
 
     pluginDirs.forEach(directory => {
         const dirPlugins = loadPluginsFromDir(directory);
-
-        dirPlugins.forEach((pluginData, id) => {
-            plugins[id] = pluginData;
-        });
+        plugins = { ...plugins, ...dirPlugins };
     });
 
     const pluginsInitiallyEnabled = process.env.PLUGINS_INITIALLY_ENABLED === 'true';
@@ -142,4 +138,6 @@ async function initializePlugins(pluginDirs, pluginLocPattern = DEFAULT_PLUGIN_L
     return plugins;
 }
 
-module.exports = initializePlugins;
+module.exports = {
+    initializePlugins
+};

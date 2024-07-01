@@ -26,7 +26,8 @@
           "required": true
         }
       ],
-      "enabled": true
+      "enabled": true,
+      "source": "plugin:weatherPlugin"
     }
   ],
   "enabled": true

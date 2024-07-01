@@ -32,21 +32,5 @@
                 "required": true
             }
         ]
-    },
-    {
-        "key": "weather",
-        "type": "node",
-        "title": "Get Weather",
-        "regex": "^weather (.+)$",
-        "process": "getWeather.js $1",
-        "usage": "weather [location] - Get weather information for the specified location",
-        "parameters": [
-            {
-                "name": "location",
-                "title": "Location Name",
-                "type": "string",
-                "required": true
-            }
-        ]
     }
 ]

@@ -42,12 +42,15 @@ module.exports = (app, config, executeScript, processHook, baseDir) => {
         const userInput = req.body.input;
 
         // Hook: intercept request
+        if (process.env.DEBUG === 'true') console.log("Intercepting request");
         await processHook(config.getPlugins(), 'interceptRequest', { req, res, userInput, config });
 
         const matchedCommand = config.getCommands().find(cmd => new RegExp(cmd.regex).test(userInput));
+        if (process.env.DEBUG === 'true') console.log("Matched Command:", matchedCommand);
 
         if (matchedCommand) {
             const parameters = userInput.match(new RegExp(matchedCommand.regex)).slice(1);
+            if (process.env.DEBUG === 'true') console.log("Parameters:", parameters);
             const validation = validateParameters(parameters, matchedCommand.parameters || []);
 
             if (!validation.isValid) {
@@ -57,8 +60,10 @@ module.exports = (app, config, executeScript, processHook, baseDir) => {
 
             try {
                 const result = await executeScript(matchedCommand, parameters, baseDir, config);
+                if (process.env.DEBUG === 'true') console.log("Execution Result:", result);
                 sendResponse(res, result.error, result.stdout);
             } catch (error) {
+                if (process.env.DEBUG === 'true') console.log("Execution Error:", error);
                 sendResponse(res, error, null);
             }
         } else {
@@ -74,6 +79,7 @@ module.exports = (app, config, executeScript, processHook, baseDir) => {
         }
 
         // Hook: intercept response
+        if (process.env.DEBUG === 'true') console.log("Intercepting response");
         await processHook(config.getPlugins(), 'interceptResponse', { req, res, userInput, config });
     });
 

@@ -1,36 +1,36 @@
 const fs = require('fs');
 const path = require('path');
 
-function loadProperties(filePath) {
-    const settings = {};
+const loadProperties = (filePath) => {
+    const properties = {};
     if (fs.existsSync(filePath)) {
-        const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
-        for (const line of lines) {
-            if (line && line.trim() && !line.startsWith('#')) {
-                const [key, value] = line.split('=');
-                settings[key.trim()] = value && value.trim();
+        const content = fs.readFileSync(filePath, 'utf-8');
+        content.split('\n').forEach(line => {
+            const [key, value] = line.split('=').map(part => part.trim());
+            if (key && value) {
+                properties[key] = value;
             }
-        }
+        });
     }
-    return settings;
-}
+    return properties;
+};
 
-function loadEnvFromDirs(dirs, basePath = __dirname) {
-    const mergedSettings = {};
+const loadEnvFromDirs = (dirs, plugins) => {
+    const env = {};
     dirs.forEach(dir => {
-        const fullPath = path.resolve(basePath, dir);
-        if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
-            fs.readdirSync(fullPath).forEach(file => {
+        if (fs.existsSync(dir) && fs.lstatSync(dir).isDirectory()) {
+            fs.readdirSync(dir).forEach(file => {
                 if (file.endsWith('.properties')) {
-                    const settings = loadProperties(path.join(fullPath, file));
-                    Object.assign(mergedSettings, settings);
+                    const pluginId = path.basename(file, '.properties');
+                    if (!plugins || plugins[pluginId]?.enabled) {
+                        Object.assign(env, loadProperties(path.join(dir, file)));
+                    }
                 }
             });
         }
     });
-    // console.log(JSON.stringify(mergedSettings, null, 2));
-    return mergedSettings;
-}
+    return env;
+};
 
 module.exports = {
     loadProperties,

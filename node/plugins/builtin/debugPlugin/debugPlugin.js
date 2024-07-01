@@ -45,6 +45,25 @@ async function showDebugInfo({ config }) {
     return 'Debug information displayed successfully';
 }
 
+async function interceptRequest({ req, res, userInput }) {
+    console.log('--- Intercept Request ---');
+    console.log(`Request: ${req.method} ${req.url}`);
+    console.log(`User Input: ${userInput}`);
+    console.log(`Request Body: ${JSON.stringify(req.body)}`);
+}
+
+async function interceptResponse({ req, res, userInput }) {
+    // Capture the response body by modifying the res.send method
+    let originalSend = res.send;
+    res.send = function (body) {
+        console.log('--- Intercept Response ---');
+        console.log(`Response for Request: ${req.method} ${req.url}`);
+        console.log(`User Input: ${userInput}`);
+        console.log(`Response Body: ${body}`);
+        originalSend.apply(res, arguments);
+    };
+}
+
 async function initialize() {
     console.log('Debug plugin initialized');
     return true;

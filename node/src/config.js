@@ -2,11 +2,11 @@ class Config {
     constructor() {
         this.commands = [];
         this.plugins = {};
-        this.env = { ...process.env };
+        this.envSettings = {};
     }
 
     addCommands(commands) {
-        this.commands = [...this.commands, ...commands];
+        this.commands = this.commands.concat(commands);
     }
 
     addPlugins(plugins) {
@@ -14,7 +14,11 @@ class Config {
     }
 
     addEnvSettings(envSettings) {
-        this.env = { ...this.env, ...envSettings };
+        this.envSettings = { ...this.envSettings, ...envSettings };
+        // Update the process environment
+        for (const [key, value] of Object.entries(envSettings)) {
+            process.env[key] = value;
+        }
     }
 
     getCommands() {
@@ -26,7 +30,7 @@ class Config {
     }
 
     getEnvSettings() {
-        return this.env;
+        return this.envSettings;
     }
 }
 
