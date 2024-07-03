@@ -82,20 +82,24 @@ module.exports = (app, config, executeScript, processHook, baseDir) => {
         const matchedCommand = config.getCommands().find(cmd => new RegExp(cmd.regex).test(userInput));
 
         if (matchedCommand) {
-            const parameters = parseCommandInput(userInput, matchedCommand.regex);
-            console.log(`Parsed Parameters: ${parameters}`); // Log parameters for debugging
-            const validation = validateParameters(parameters, matchedCommand.parameters || []);
+            if (matchedCommand.enabled) {
+                const parameters = parseCommandInput(userInput, matchedCommand.regex);
+                console.log(`Parsed Parameters: ${parameters}`); // Log parameters for debugging
+                const validation = validateParameters(parameters, matchedCommand.parameters || []);
 
-            if (!validation.isValid) {
-                sendResponse(res, new Error(validation.message), null);
-                return;
-            }
+                if (!validation.isValid) {
+                    sendResponse(res, new Error(validation.message), null);
+                    return;
+                }
 
-            try {
-                const result = await executeScript(matchedCommand, parameters, baseDir, config);
-                sendResponse(res, result.error, result.stdout);
-            } catch (error) {
-                sendResponse(res, error, null);
+                try {
+                    const result = await executeScript(matchedCommand, parameters, baseDir, config);
+                    sendResponse(res, result.error, result.stdout);
+                } catch (error) {
+                    sendResponse(res, error, null);
+                }
+            } else {
+                sendResponse(res, new Error('Command is disabled'), null);
             }
         } else {
             // Define parameters as an empty object for unrecognized commands
