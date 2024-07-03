@@ -6,7 +6,7 @@ Note that this is subject to change as everything changes quickly these days, do
 
 ## To Do
 
-- [ ] Project MVP - Creating 'Projects' to link into ChatBlox - Halfway to Plugins!
+- [ ] Project MVP - Creating 'Projects' to link into ChatBlox - Basically like plugins but without need to conform to plugin specification - e.g. existing non-Chatblox projects - these could then be turned into plugins if required
 - [ ] Add Set environment variable command - either global or for specific command
 - [ ] Add python to languages list
 - [ ] Split API from rest of logic
@@ -33,6 +33,7 @@ Note that this is subject to change as everything changes quickly these days, do
 
 ## Done
 
-- [x] Initial Release - v0.1 - 26 Mar 2024
+- [x] Initial Release - v0.1
+- [ ] Plugin MVP - Creating locally created 'Plugins' to include in ChatBlox - v.0.2
 
 Use at your own risk. It really is very early days!

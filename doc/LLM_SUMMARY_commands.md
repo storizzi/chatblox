@@ -17,7 +17,6 @@ The `commands` directory in your chat application contains various scripts that 
 
 ### Specific Script Examples
 
-* `getWeather.js`: Fetches and displays weather information for a given location.
 * `gitPull.sh`: Executes a `git pull` command in a specified directory.
 * `checkTab.scpt`: Checks for the presence of a specific tab in the Chrome browser.
 
