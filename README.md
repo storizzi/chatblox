@@ -18,11 +18,6 @@
     - [Default Locations](#default-locations)
     - [Overriding Defaults](#overriding-defaults)
     - [Sample .env File with Comments](#sample-env-file-with-comments)
-- [Server Configuration](#server-configuration)
-- [Script Settings](#script-settings)
-- [Command Settings](#command-settings)
-- [Plugin Settings](#plugin-settings)
-- [Specific Plugin and Hook Settings](#specific-plugin-and-hook-settings)
     - [Default Locations](#default-locations-1)
     - [Overriding Defaults](#overriding-defaults-1)
   - [Overview of Commands and Plugins](#overview-of-commands-and-plugins)
@@ -112,7 +107,7 @@ Environment variables control the behavior and configuration of Chatblox. They c
 
 ### Example .env File
 
-'''
+```
 PORT=5001
 NODE_ENV=development
 DEBUG=false
@@ -133,7 +128,7 @@ ENABLE_PLUGIN_checkUrlForString=false
 ENABLE_HOOK_debugPlugin_interceptRequest=true
 ENABLE_HOOK_debugPlugin_interceptResponse=true
 ENABLE_COMMAND_checkUrlForString=false
-'''
+```
 
 ### Environment Variables
 
@@ -170,7 +165,7 @@ Environment variables set in the `.env` file can be overridden by setting them d
 
 ### Sample .env File with Comments
 
-'''
+```
 # Server Configuration
 PORT=5001 # Port on which the server runs
 NODE_ENV=development # Environment mode (development, production, test)
@@ -197,7 +192,7 @@ ENABLE_PLUGIN_checkUrlForString=false # Disable checkUrlForString plugin
 ENABLE_HOOK_debugPlugin_interceptRequest=true # Enable interceptRequest hook for debug plugin
 ENABLE_HOOK_debugPlugin_interceptResponse=true # Enable interceptResponse hook for debug plugin
 ENABLE_COMMAND_checkUrlForString=false # Disable checkUrlForString command
-'''
+```
 
 ### Default Locations
 * `.env` in the project root
@@ -223,7 +218,7 @@ Commands in Chatblox are scripts or executable files that perform specific tasks
   - `directory`: The directory of the Git repository (required).
 - **Usage**: `git pull [directory] - Perform a git pull in the specified directory`
 - **Configuration**:
-  '''
+  ```
   {
     "key": "gitPull",
     "type": "bash",
@@ -240,7 +235,7 @@ Commands in Chatblox are scripts or executable files that perform specific tasks
       }
     ]
   }
-  '''
+  ```
 - **Script Location**: `/commands/gitPull.sh`
 
 ##### 2. Check Chrome Tab (`checkTab.scpt`)
@@ -249,7 +244,7 @@ Commands in Chatblox are scripts or executable files that perform specific tasks
   - `tabName`: The name of the Chrome tab (required).
 - **Usage**: `check chrome tab [tabName] - Check if a Chrome tab with the specified name is open`
 - **Configuration**:
-  '''
+  ```
   {
     "key": "checkChromeTab",
     "type": "osascript",
@@ -268,7 +263,7 @@ Commands in Chatblox are scripts or executable files that perform specific tasks
       }
     ]
   }
-  '''
+  ```
 - **Script Location**: `/commands/checkTab.scpt`
 
 ##### 3. Check URL for String (`checkUrlForString.js`)
@@ -278,7 +273,7 @@ Commands in Chatblox are scripts or executable files that perform specific tasks
   - `string`: The string to match (required).
 - **Usage**: `check url <url> for <string> - Check if the specified string is present in the content of the given URL`
 - **Configuration**:
-  '''
+  ```
   {
     "key": "checkUrlForString",
     "regex": "^check url (.+) (.+)$",
@@ -301,15 +296,15 @@ Commands in Chatblox are scripts or executable files that perform specific tasks
     ],
     "enabled": true
   }
-  '''
+  ```
 - **Script Location**: `/commands/checkUrlForString.js`
 - **Properties File**: `checkUrlForString.properties` contains:
-  '''
+  ```
   URL_CHECK_TIMEOUT=5000
   URL_CHECK_RETRIES=3
   URL_CHECK_RETRY_WAIT=1000
   URL_CHECK_TEXT=false
-  '''
+  ```
 
 #### Script-Settings Directory
 
@@ -323,12 +318,12 @@ These properties files contain key-value pairs that are used to configure the co
 #### Sample Properties Files
 
 **checkUrlForString.properties**:
-'''
+```
 URL_CHECK_TIMEOUT=5000
 URL_CHECK_RETRIES=3
 URL_CHECK_RETRY_WAIT=1000
 URL_CHECK_TEXT=false
-'''
+```
 
 #### Sample Files
 Sample properties files with default values are provided. They have filenames like `checkUrlForString-sample.properties` or `weatherPlugin-sample.properties`. Copy and rename these files to remove the `-sample` suffix and configure them as needed.
@@ -336,7 +331,7 @@ Sample properties files with default values are provided. They have filenames li
 #### Commands Configuration (commands.json)
 
 The `commands.json` file defines all available commands. Here is the default `commands.json` configuration:
-'''
+```
 [
   {
     "key": "gitPull",
@@ -395,16 +390,16 @@ The `commands.json` file defines all available commands. Here is the default `co
     "enabled": true
   }
 ]
-'''
+```
 
 ### Updating Command Locations
 
 You can change the list of `commands.json` locations in the `.env` file or through environment variables. For example:
 
 **Example .env File**:
-'''
+```
 COMMANDS_JSON_FILES={{app}}/commands.json,{{app}}/custom-commands.json
-'''
+```
 
 This configuration will load commands from both `commands.json` and `custom-commands.json` files. If multiple files are specified, commands from later files will override those from earlier files if there are conflicts.
 
@@ -444,7 +439,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
   - `location`: The location for which to retrieve the weather information (required).
 - **Usage**: `weather [location] - Get weather information for the specified location`
 - **Configuration**:
-  '''
+  ```
   {
     "id": "weatherPlugin",
     "initialization": {
@@ -478,12 +473,12 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
     ],
     "enabled": true
   }
-  '''
+  ```
 - **Script Location**: `/plugins/builtin/weatherPlugin/weatherPlugin.js`
 - **Properties File**: `weatherPlugin.properties` contains:
-  '''
+  ```
   OPENWEATHER_API_KEY=your_api_key_here
-  '''
+  ```
 - **Obtaining an API Key**: To get an OpenWeather API key, sign up at [OpenWeather](https://home.openweathermap.org/users/sign_up). Once registered, you can generate an API key from the API keys section in your account.
 
 ##### 2. Check URL for String Plugin (`checkUrlForStringPlugin.js`)
@@ -493,7 +488,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
   - `string`: The string to match (required).
 - **Usage**: `check url <url> for <string> - Check if the specified string is present in the content of the given URL`
 - **Configuration**:
-  '''
+  ```
   {
     "id": "checkUrlForStringPlugin",
     "initialization": {
@@ -528,15 +523,15 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
     ],
     "enabled": true
   }
-  '''
+  ```
 - **Script Location**: `/plugins/builtin/checkUrlForStringPlugin/checkUrlForStringPlugin.js`
 - **Properties File**: `checkUrlForString.properties` contains:
-  '''
+  ```
   URL_CHECK_TIMEOUT=5000
   URL_CHECK_RETRIES=3
   URL_CHECK_RETRY_WAIT=1000
   URL_CHECK_TEXT=false
-  '''
+  ```
 
 ##### 3. Command Details Plugin (`commandDetailsPlugin.js`)
 **Description**: Provides details about the specified command.
@@ -544,7 +539,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
   - `commandKey`: The key of the command to retrieve details for (required).
 - **Usage**: `help [commandKey] - Get details about the specified command`
 - **Configuration**:
-  '''
+  ```
   {
     "id": "commandDetailsPlugin",
     "initialization": {
@@ -572,7 +567,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
     ],
     "enabled": true
   }
-  '''
+  ```
 - **Script Location**: `/plugins/builtin/commandDetailsPlugin/commandDetailsPlugin.js`
 
 ##### 4. Debug Plugin (`debugPlugin.js`)
@@ -580,7 +575,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
 - **Parameters**: None
 - **Usage**: Internal use
 - **Configuration**:
-  '''
+  ```
   {
     "id": "debugPlugin",
     "initialization": {
@@ -603,7 +598,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
     "commands": [],
     "enabled": true
   }
-  '''
+  ```
 - **Script Location**: `/plugins/builtin/debugPlugin/debugPlugin.js`
 
 ##### 5. Help Plugin (`helpPlugin.js`)
@@ -611,7 +606,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
 - **Parameters**: None
 - **Usage**: `help - Display a list of available commands`
 - **Configuration**:
-  '''
+  ```
   {
     "id": "helpPlugin",
     "initialization": {
@@ -633,7 +628,7 @@ Plugins in Chatblox are modular pieces of code that extend the functionality of 
     ],
     "enabled": true
   }
-  '''
+  ```
 - **Script Location**: `/plugins/builtin/helpPlugin/helpPlugin.js`
 
 #### Adding a New Plugin
@@ -643,7 +638,7 @@ To add a new plugin, follow these steps:
 1. **Create the Plugin Script**: Write the main plugin logic in a `.js` file.
 
 2. **Create the Configuration File**: Write a `config.json` file for the plugin that defines its commands and hooks. Here is an example configuration file for a plugin:
-   '''
+   ```
    {
      "id": "myNewPlugin",
      "initialization": {
@@ -672,21 +667,21 @@ To add a new plugin, follow these steps:
      ],
      "enabled": true
    }
-   '''
+   ```
 
 3. **Create the Properties File**: If your plugin requires configuration settings, create a `.properties` file in the `script-settings` directory with the necessary key-value pairs.
 
 4. **Update the .env File**: Ensure the `PLUGIN_DIRS` environment variable includes the directory where your new plugin resides. For example:
-   '''
+   ```
    PLUGIN_DIRS={{app}}/plugins/local,{{app}}/plugins/downloads,{{app}}/plugins/builtin
-   '''
+   ```
 
 #### Hooks in Plugins
 
 Hooks are mechanisms that allow plugins to intercept and extend the behavior of the application. Plugins can define hooks in their `config.json` file, and these hooks are executed at specific points in the application's lifecycle.
 
 **Example Hooks Configuration**:
-'''
+```
 "hooks": {
   "interceptRequest": [
     "requestInterceptor"
@@ -695,7 +690,7 @@ Hooks are mechanisms that allow plugins to intercept and extend the behavior of 
     "responseInterceptor"
   ]
 }
-'''
+```
 
 **Available Hooks**:
 - `interceptRequest`: Triggered when a request is received.
@@ -708,7 +703,7 @@ Hooks are mechanisms that allow plugins to intercept and extend the behavior of 
 - `config`: The configuration object.
 
 **Example Implementation in a Plugin**:
-'''javascript
+```javascript
 async function requestInterceptor({ req, res, userInput, config }) {
     console.log(`Intercepting request: ${userInput}`);
     // Perform custom logic here
@@ -722,7 +717,7 @@ async function responseInterceptor({ req, res, userInput, config }) {
 }
 
 module.exports = { initialize, requestInterceptor, responseInterceptor };
-'''
+```
 
 #### Module Auto-Installation
 
@@ -735,13 +730,13 @@ Nodemon is used to automatically restart the server when code changes.
 
 ### Configuration
 Example `nodemon.json`:
-'''
+```
 {
   "watch": ["src", "commands", "plugins"],
   "ext": "js,json",
   "ignore": ["node_modules"]
 }
-'''
+```
 
 ### Adding Custom Directories
 Add the new directories to the `watch` array in `nodemon.json`.
@@ -753,7 +748,7 @@ Add the new directories to the `watch` array in `nodemon.json`.
 2. Configure `launch.json` in the `.vscode` directory.
 
 ### Example launch.json
-'''
+```
 {
   "version": "0.2.0",
   "configurations": [
@@ -771,7 +766,7 @@ Add the new directories to the `watch` array in `nodemon.json`.
     }
   ]
 }
-'''
+```
 
 ### Running the Debugger
 1. Open the Debug panel in VS Code.
