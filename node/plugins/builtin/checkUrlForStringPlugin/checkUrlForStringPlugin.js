@@ -61,10 +61,12 @@ const initialize = async () => {
 };
 
 const getUrlStringCheck = async ({ commandConfig, parameters, baseDir, config }) => {
+    console.log('getUrlStringCheck called with parameters:', parameters);
     const [url, string] = parameters;
     if (isDebugMode) {
         console.log(`Received URL: ${url}`);
         console.log(`Received String: ${string}`);
+        console.log(`URL Check Retries: ${URL_CHECK_RETRIES}`);
     }
 
     if (!url || !string) {

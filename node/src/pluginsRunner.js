@@ -54,16 +54,14 @@ const processHook = async (plugins, hookName, hookParams) => {
                         }
                     } catch (error) {
                         console.error(`Error in hook '${hookName}' for plugin '${pluginId}':`, error);
-                        if (error.code === 'MODULE_NOT_FOUND') {
-                            const match = error.message.match(/Cannot find module '([^']+)'/);
-                            if (match) {
-                                const missingModule = match[1];
-                                await installMissingModule(missingModule, pluginData.directory);
-                                const hookResult = await pluginData.imports[methodName](hookParams);
-                                if (hookResult !== null && hookResult !== result) {
-                                    result = hookResult; // Update result with the hook's result
-                                    dataChanged = true;
-                                }
+                        const match = error.message.match(/Cannot find module '([^']+)'/);
+                        if (match) {
+                            const missingModule = match[1];
+                            await installMissingModule(missingModule, pluginData.directory);
+                            const hookResult = await pluginData.imports[methodName](hookParams);
+                            if (hookResult !== null && hookResult !== result) {
+                                result = hookResult; // Update result with the hook's result
+                                dataChanged = true;
                             }
                         }
                     }

@@ -1,23 +1,21 @@
-const { exec } = require('child_process');
-const util = require('util');
+const { exec, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const execCommand = async (command, scriptSettings) => {
-    const execPromise = util.promisify(exec);
+const execCommand = (command, scriptSettings) => {
     try {
-        const { stdout, stderr } = await execPromise(command, { env: { ...process.env, ...scriptSettings } });
+        const { stdout, stderr } = execSync(command, { env: { ...process.env, ...scriptSettings }, stdio: 'pipe' });
         console.log(`Command '${command}' executed successfully.`);
-        return { error: null, stdout: stdout ? stdout.trim() : "", stderr: stderr ? stderr.trim() : "" };
+        return { error: null, stdout: stdout ? stdout.toString().trim() : "", stderr: stderr ? stderr.toString().trim() : "" };
     } catch (error) {
         console.log(`Error executing command '${command}': ${error.message}`);
         return { error, stdout: null, stderr: error.message };
     }
 };
 
-const installMissingModule = async (moduleName, cwd, attempts = 0) => {
+const installMissingModuleSync = (moduleName, cwd) => {
     console.log(`Attempting to install missing module '${moduleName}' in directory '${cwd}'...`);
-    
+
     // Ensure package.json exists
     const packageJsonPath = path.join(cwd, 'package.json');
     if (!fs.existsSync(packageJsonPath)) {
@@ -27,21 +25,20 @@ const installMissingModule = async (moduleName, cwd, attempts = 0) => {
 
     const installCommand = `npm install ${moduleName}`;
     try {
-        const execSync = util.promisify(exec);
-        await execSync(installCommand, { cwd });
+        execSync(installCommand, { cwd, stdio: 'inherit' });
         console.log(`Module '${moduleName}' installed successfully in directory '${cwd}'.`);
     } catch (error) {
-        console.error(`Failed to install module '${moduleName}' in directory '${cwd}' after ${attempts + 1} attempts: ${error.message}`);
+        console.error(`Failed to install module '${moduleName}' in directory '${cwd}': ${error.message}`);
         throw error;
     }
 };
 
-const executeNodeScript = async (scriptPath, parameters, scriptSettings, config, attempts = 0) => {
+const executeNodeScript = (scriptPath, parameters, scriptSettings, config, attempts = 0) => {
     const commandToRun = `node ${scriptPath} ${parameters.join(' ')}`;
     const maxRetries = parseInt(process.env.AUTOINSTALL_CMD_MODS_RETRIES) || 3;
     console.log(`Executing Node script: ${commandToRun}`);
     try {
-        const result = await execCommand(commandToRun, scriptSettings);
+        const result = execCommand(commandToRun, scriptSettings);
         if (result.error) {
             throw new Error(result.error);
         }
@@ -57,24 +54,24 @@ const executeNodeScript = async (scriptPath, parameters, scriptSettings, config,
         const match = error.message.match(/Cannot find (module|package) '([^']+)'/);
         if (match && attempts < maxRetries) {
             const missingModule = match[2];
-            await installMissingModule(missingModule, path.dirname(scriptPath), attempts);
+            installMissingModuleSync(missingModule, path.dirname(scriptPath));
             return executeNodeScript(scriptPath, parameters, scriptSettings, config, attempts + 1);
         }
         throw error;
     }
 };
 
-const executeAppleScript = async (scriptPath, parameters, scriptSettings) => {
+const executeAppleScript = (scriptPath, parameters, scriptSettings) => {
     const commandToRun = `osascript ${scriptPath} ${parameters.join(' ')}`;
     return execCommand(commandToRun, scriptSettings);
 };
 
-const executeBashScript = async (scriptPath, parameters, scriptSettings) => {
+const executeBashScript = (scriptPath, parameters, scriptSettings) => {
     const commandToRun = `${scriptPath} ${parameters.join(' ')}`;
     return execCommand(commandToRun, scriptSettings);
 };
 
-const installMissingModuleForPlugin = async (moduleName, pluginId, baseDir, attempts = 0) => {
+const installMissingModuleForPlugin = (moduleName, pluginId, baseDir, attempts = 0) => {
     const pluginDir = path.join(baseDir, 'plugins', 'builtin', pluginId);
     console.log(`Attempting to install missing module '${moduleName}' for plugin '${pluginId}'...`);
     
@@ -88,8 +85,7 @@ const installMissingModuleForPlugin = async (moduleName, pluginId, baseDir, atte
 
     const installCommand = `npm install ${moduleName}`;
     try {
-        const execPromise = util.promisify(exec);
-        await execPromise(installCommand, { cwd: pluginDir });
+        execSync(installCommand, { cwd: pluginDir, stdio: 'inherit' });
         console.log(`Module '${moduleName}' installed successfully for plugin '${pluginId}'.`);
     } catch (error) {
         console.error(`Failed to install module '${moduleName}' for plugin '${pluginId}' after ${attempts + 1} attempts: ${error.message}`);
@@ -97,17 +93,26 @@ const installMissingModuleForPlugin = async (moduleName, pluginId, baseDir, atte
     }
 };
 
+const removeMatchingQuotes = (str) => {
+    if ((str.startsWith('"') && str.endsWith('"')) || (str.startsWith("'") && str.endsWith("'"))) {
+        return str.slice(1, -1);
+    }
+    return str;
+};
 
 const executeInMemoryFunction = async ({ commandConfig, parameters, baseDir, config, attempts = 0 }) => {
     const pluginId = commandConfig.source.split(':')[1];
     const plugin = config.getPlugins()[pluginId];
-    console.log(JSON.stringify(plugin, null, 2));
     const pluginFunction = plugin.imports[commandConfig.process];
     if (!pluginFunction) {
         throw new Error(`Function '${commandConfig.process}' not found in plugin '${pluginId}'`);
     }
+
+    // Remove matching quotes for node.js plugins
+    const processedParameters = parameters.map(removeMatchingQuotes);
+
     try {
-        const result = await pluginFunction({ commandConfig, parameters, baseDir, config });
+        const result = await pluginFunction({ commandConfig, parameters: processedParameters, baseDir, config });
         if (result && typeof result === 'string' && result.match(/Cannot find (module|package) '([^']+)'/)) {
             throw new Error(result);
         }
@@ -117,7 +122,7 @@ const executeInMemoryFunction = async ({ commandConfig, parameters, baseDir, con
         const match = error.message.match(/Cannot find (module|package) '([^']+)'/);
         if (match && attempts < parseInt(process.env.AUTOINSTALL_CMD_MODS_RETRIES) || 3) {
             const missingModule = match[2];
-            await installMissingModuleForPlugin(missingModule, pluginId, baseDir, attempts);
+            installMissingModuleForPlugin(missingModule, pluginId, baseDir, attempts);
             return executeInMemoryFunction({ commandConfig, parameters, baseDir, config, attempts: attempts + 1 });
         }
         throw error;

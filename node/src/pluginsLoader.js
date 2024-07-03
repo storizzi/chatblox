@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
+const { execSync } = require('child_process');
 const { loadProperties } = require('./environmentLoader');
 
 const DEFAULT_PLUGIN_LOC_PATTERN = /^PLUGIN_LOC_(.+)$/;
@@ -61,17 +60,7 @@ function loadPluginsFromDir(directory) {
     return plugins;
 }
 
-const execCommand = async (command, cwd) => {
-    const execPromise = util.promisify(exec);
-    try {
-        const { stdout, stderr } = await execPromise(command, { cwd });
-        return { error: null, stdout: stdout ? stdout.trim() : "" };
-    } catch (error) {
-        return { error, stdout: null };
-    }
-};
-
-const installMissingModule = async (moduleName, cwd, attempts = 0) => {
+const installMissingModuleSync = (moduleName, cwd) => {
     console.log(`Attempting to install missing module '${moduleName}' in directory '${cwd}'...`);
     
     // Ensure package.json exists
@@ -83,23 +72,35 @@ const installMissingModule = async (moduleName, cwd, attempts = 0) => {
 
     const installCommand = `npm install ${moduleName}`;
     try {
-        const result = await execCommand(installCommand, cwd);
-        if (result.error) {
-            throw result.error;
-        }
+        execSync(installCommand, { cwd, stdio: 'inherit' });
         console.log(`Module '${moduleName}' installed successfully in directory '${cwd}'.`);
     } catch (error) {
-        console.error(`Failed to install module '${moduleName}' in directory '${cwd}' after ${attempts + 1} attempts: ${error.message}`);
+        console.error(`Failed to install module '${moduleName}' in directory '${cwd}': ${error.message}`);
         throw error;
     }
 };
 
-async function importModule(filePath) {
+async function importModule(filePath, pluginDirectory) {
     try {
         const importedModule = require(filePath);
         return importedModule.default || importedModule;
     } catch (error) {
         console.error(`Error importing module ${filePath}:`, error);
+
+        if (error.code === 'MODULE_NOT_FOUND') {
+            const match = error.message.match(/Cannot find module '([^']+)'/);
+            if (match) {
+                const missingModule = match[1];
+                installMissingModuleSync(missingModule, pluginDirectory);
+                try {
+                    const importedModule = require(filePath);
+                    return importedModule.default || importedModule;
+                } catch (reimportError) {
+                    console.error(`Failed to re-import module ${filePath} after installing missing module:`, reimportError);
+                    return null;
+                }
+            }
+        }
         return null;
     }
 }
@@ -113,36 +114,19 @@ async function processPluginImportsAndSetup(plugins) {
         if (config.initialization && config.initialization.import) {
             const importPath = path.join(pluginData.directory, config.initialization.import.fileName);
             const importName = config.initialization.import.name || "initialize";
-            
-            try {
-                let imports = await importModule(importPath);
-                pluginData.imports = imports;
 
-                if (imports && imports[importName] && typeof imports[importName] === 'function') {
+            let imports = await importModule(importPath, pluginData.directory);
+            pluginData.imports = imports;
+
+            if (imports && imports[importName] && typeof imports[importName] === 'function') {
+                try {
                     pluginData.setupResults = await imports[importName]();
                     console.log(`Initialization method '${importName}' for plugin '${id}' called successfully.`);
-                } else {
-                    console.log(`Initialization method '${importName}' not found for plugin '${id}'.`);
+                } catch (setupError) {
+                    console.error(`Error during initialization of plugin '${id}':`, setupError);
                 }
-            } catch (error) {
-                if (error.code === 'MODULE_NOT_FOUND') {
-                    const match = error.message.match(/Cannot find module '([^']+)'/);
-                    if (match) {
-                        const missingModule = match[1];
-                        await installMissingModule(missingModule, pluginData.directory);
-                        imports = await importModule(importPath);
-                        pluginData.imports = imports;
-
-                        if (imports && imports[importName] && typeof imports[importName] === 'function') {
-                            pluginData.setupResults = await imports[importName]();
-                            console.log(`Initialization method '${importName}' for plugin '${id}' called successfully after installing missing module.`);
-                        } else {
-                            console.log(`Initialization method '${importName}' not found for plugin '${id}' after installing missing module.`);
-                        }
-                    }
-                } else {
-                    console.error(`Error importing module ${importPath}:`, error);
-                }
+            } else {
+                console.log(`Initialization method '${importName}' not found for plugin '${id}'.`);
             }
         }
     }
