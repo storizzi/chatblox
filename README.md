@@ -18,8 +18,6 @@
     - [Default Locations](#default-locations)
     - [Overriding Defaults](#overriding-defaults)
     - [Sample .env File with Comments](#sample-env-file-with-comments)
-    - [Default Locations](#default-locations-1)
-    - [Overriding Defaults](#overriding-defaults-1)
   - [Overview of Commands and Plugins](#overview-of-commands-and-plugins)
     - [Commands](#commands)
       - [Sample Commands](#sample-commands)
@@ -66,6 +64,18 @@
 
 Chatblox is a work-in-progress project aiming to create a chat-based interface for accessing various productivity tools and scripts on your local machine. The goal is to consolidate different tools and data sources, enhancing automation and ensuring local data control.
 
+Current commands available are:
+
+* get weather for a location
+* Check a web page to see if it contains specific text (or extract specific text from the page)
+* Check to see if a specific chrome tab is open
+* git pull
+* Help
+* Specific Help on loaded commands (derived from the commands / plugin configuration)
+* Debugging
+
+These will be expanded over time
+
 ## Intentions for Project
 
 The long-term vision includes:
@@ -81,6 +91,8 @@ The long-term vision includes:
 
 Currently, it is targeted towards macOS but should work on Linux and WSL for Windows.
 
+The demo below is from an earlier version of Chatblox, prior to the plugin architecture (and samples) and the new background watermark. This will be updated once some more interesting samples become available
+
 [![Simple Chatblox Demo](./doc/assets/chatblox-eg-video-still-frame.png)](https://github.com/storizzi/chatblox/assets/26940113/eb5a1d77-80d7-467c-a805-254e23cb4e79)
 
 ## Installation / Start Up
@@ -89,15 +101,21 @@ Currently, it is targeted towards macOS but should work on Linux and WSL for Win
 
 The types of commands cover shell, node.js (javascript) and applescript. Plugins currently only support node.js (javascript) and are loaded in-memory on startup
 
-`cd node/src`
+chatblox runs with node.js so install a recent copy of node.js (e.g. through installing nvm or similar tool) or using homebrew (e.g. `brew install node`) albeit this gives you less control over installing and using specific versions of node.js
+
+Once you have a copy of chatblox downloaded (e.g. using `git clone https://github.com/storizzi/chatblox`) change to the node directory:
+
+`cd chatblox/node`
 
 Set up using using `npm i`
 
-Start up using `npm start`
+Start up using `npm start` or `nodemon` if you are making changes to the project (e.g. creating or editing commands / plugins / configuration) and wish the server to be restarted automatically with each change.
 
-If you have chrome installed, a browser window will be opened to (by default): http://localhost:3000
+If you have chrome installed, a browser window will be opened automatically (by default) to: http://localhost:5001
 
-The default port is 5001. Set the port number in the .env file or pass as an environment variable from the environment you are calling the script from - see `.env-sample` file as an example (which you would rename to .env to use it)
+Communication from the front end to the back-end happens through a web service, so any changes you make to the back-end that causes a restart does not affect the front end - you don't need to restart this, and if the tab is already open in chrome, the back-end won't try to re-open another tab.
+
+Set the port number (default 5001) in the .env file or pass as an environment variable from the environment you are calling the script from - see `.env-sample` file as an example (which you would rename to .env to use it)
 
 ## Environment Files
 
@@ -193,14 +211,6 @@ ENABLE_HOOK_debugPlugin_interceptRequest=true # Enable interceptRequest hook for
 ENABLE_HOOK_debugPlugin_interceptResponse=true # Enable interceptResponse hook for debug plugin
 ENABLE_COMMAND_checkUrlForString=false # Disable checkUrlForString command
 ```
-
-### Default Locations
-* `.env` in the project root
-* User home directory
-* Current working directory
-
-### Overriding Defaults
-Environment variables set in the `.env` file can be overridden by setting them directly in the environment or through other environment-specific files.
 
 ## Overview of Commands and Plugins
 
