@@ -23,4 +23,4 @@ function loadCommands(commandFiles) {
     return commands;
 }
 
-module.exports = loadCommands;
+module.exports = { loadCommands };

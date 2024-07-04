@@ -1,11 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const { loadEnv } = require('./environmentLoader'); // Import the loadEnv function
+const { loadEnv, loadEnvFromDirs } = require('./environmentLoader');
 const Config = require('./config');
-const loadCommands = require('./commandsLoader');
-const { loadEnvFromDirs } = require('./environmentLoader');
+const { loadCommands } = require('./commandsLoader');
 const { executeScript } = require('./commandsRunner');
 const { initializePlugins } = require('./pluginsLoader');
 const { processHook } = require('./pluginsRunner');
@@ -14,28 +12,22 @@ const routes = require('./routes');
 const app = express();
 const config = new Config();
 
-// Set appRoot to the parent directory of src
-const appRoot = path.resolve(__dirname, '..');
-
 const port = process.env.PORT || 3000;
 const runEnv = process.env.NODE_ENV || 'development';
 const isDevMode = runEnv === 'development';
 const isDebugMode = process.env.DEBUG === 'true';
 
-// Replace {{app}} with the app root directory
-const resolveAppPath = (p) => p.replace('{{app}}', appRoot);
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(appRoot, 'public')));
+app.use(express.static(path.join(config.appRoot, 'public')));
 
-// Load .env files
-loadEnv();
+// Load .env files and update config
+loadEnv(config);
 
 // Load and merge commands.json files
 const commandsJsonFiles = (process.env.COMMANDS_JSON_FILES || '')
     .split(',')
-    .map(file => resolveAppPath(file))
+    .map(file => config.resolveAppPath(file))
     .filter(file => file);
 const commands = loadCommands(commandsJsonFiles);
 config.addCommands(commands);
@@ -60,13 +52,13 @@ let plugins = {};
 // Initialize plugins
 const pluginDirs = (process.env.PLUGIN_DIRS || '')
     .split(',')
-    .map(dir => resolveAppPath(dir))
+    .map(dir => config.resolveAppPath(dir))
     .filter(dir => dir);
 const autoLoadPlugins = process.env.AUTOLOAD_PLUGINS === 'true';
 
 const initialize = async () => {
     if (autoLoadPlugins) {
-        plugins = await initializePlugins(pluginDirs);
+        plugins = await initializePlugins(pluginDirs, config);
         config.addPlugins(plugins);
         for (const pluginId in plugins) {
             if (plugins[pluginId].enabled) {
@@ -77,7 +69,7 @@ const initialize = async () => {
 
     const scriptSettingsDirs = (process.env.SCRIPT_SETTINGS_DIRS || '')
         .split(',')
-        .map(dir => resolveAppPath(dir))
+        .map(dir => config.resolveAppPath(dir))
         .filter(dir => dir);
 
     const envSettings = loadEnvFromDirs(scriptSettingsDirs, {
@@ -93,7 +85,7 @@ initialize().then(async () => {
         await processHook(config.getPlugins(), 'showDebugInfo', { config, env: process.env });
     }
 
-    routes(app, config, executeScript, processHook, appRoot); // Setup routes after initialization
+    routes(app, config, executeScript, processHook, config.appRoot); // Setup routes after initialization
 
     app.listen(port, async () => {
         console.log(`Server running in ${runEnv} at http://localhost:${port}`);

@@ -18,14 +18,14 @@ function readPluginConfig(directory) {
     return {};
 }
 
-function loadPluginsFromEnv(pluginLocPattern) {
+function loadPluginsFromEnv(pluginLocPattern, appRoot) {
     let plugins = {};
 
     for (const [key, value] of Object.entries(process.env)) {
         const match = key.match(pluginLocPattern);
         if (match) {
             const pluginName = match[1];
-            const directory = path.isAbsolute(value) ? value : path.resolve(value);
+            const directory = path.isAbsolute(value) ? value : path.resolve(appRoot, value);
             const config = readPluginConfig(directory);
 
             plugins[pluginName] = {
@@ -60,9 +60,9 @@ function loadPluginsFromDir(directory) {
     return plugins;
 }
 
-const installMissingModuleSync = (moduleName, cwd) => {
+const installMissingModule = (moduleName, cwd, attempts = 0) => {
     console.log(`Attempting to install missing module '${moduleName}' in directory '${cwd}'...`);
-    
+
     // Ensure package.json exists
     const packageJsonPath = path.join(cwd, 'package.json');
     if (!fs.existsSync(packageJsonPath)) {
@@ -72,36 +72,21 @@ const installMissingModuleSync = (moduleName, cwd) => {
 
     const installCommand = `npm install ${moduleName}`;
     try {
-        execSync(installCommand, { cwd, stdio: 'inherit' });
+        execSync(installCommand, { cwd });
         console.log(`Module '${moduleName}' installed successfully in directory '${cwd}'.`);
     } catch (error) {
-        console.error(`Failed to install module '${moduleName}' in directory '${cwd}': ${error.message}`);
+        console.error(`Failed to install module '${moduleName}' in directory '${cwd}' after ${attempts + 1} attempts: ${error.message}`);
         throw error;
     }
 };
 
-async function importModule(filePath, pluginDirectory) {
+async function importModule(filePath) {
     try {
-        const importedModule = require(filePath);
+        const importedModule = await import(filePath);
         return importedModule.default || importedModule;
     } catch (error) {
         console.error(`Error importing module ${filePath}:`, error);
-
-        if (error.code === 'MODULE_NOT_FOUND') {
-            const match = error.message.match(/Cannot find module '([^']+)'/);
-            if (match) {
-                const missingModule = match[1];
-                installMissingModuleSync(missingModule, pluginDirectory);
-                try {
-                    const importedModule = require(filePath);
-                    return importedModule.default || importedModule;
-                } catch (reimportError) {
-                    console.error(`Failed to re-import module ${filePath} after installing missing module:`, reimportError);
-                    return null;
-                }
-            }
-        }
-        return null;
+        throw error;
     }
 }
 
@@ -115,28 +100,47 @@ async function processPluginImportsAndSetup(plugins) {
             const importPath = path.join(pluginData.directory, config.initialization.import.fileName);
             const importName = config.initialization.import.name || "initialize";
 
-            let imports = await importModule(importPath, pluginData.directory);
-            pluginData.imports = imports;
+            try {
+                let imports = await importModule(importPath);
+                pluginData.imports = imports;
 
-            if (imports && imports[importName] && typeof imports[importName] === 'function') {
-                try {
+                if (imports && imports[importName] && typeof imports[importName] === 'function') {
                     pluginData.setupResults = await imports[importName]();
                     console.log(`Initialization method '${importName}' for plugin '${id}' called successfully.`);
-                } catch (setupError) {
-                    console.error(`Error during initialization of plugin '${id}':`, setupError);
+                } else {
+                    console.log(`Initialization method '${importName}' not found for plugin '${id}'.`);
                 }
-            } else {
-                console.log(`Initialization method '${importName}' not found for plugin '${id}'.`);
+            } catch (error) {
+                if (error.code === 'ERR_MODULE_NOT_FOUND') {
+                    const match = error.message.match(/Cannot find module '([^']+)'/);
+                    if (match) {
+                        const missingModule = match[1];
+                        await installMissingModule(missingModule, pluginData.directory);
+                        imports = await importModule(importPath);
+                        pluginData.imports = imports;
+
+                        if (imports && imports[importName] && typeof imports[importName] === 'function') {
+                            pluginData.setupResults = await imports[importName]();
+                            console.log(`Initialization method '${importName}' for plugin '${id}' called successfully after installing missing module.`);
+                        } else {
+                            console.log(`Initialization method '${importName}' not found for plugin '${id}' after installing missing module.`);
+                        }
+                    }
+                } else {
+                    console.error(`Error importing module ${importPath}:`, error);
+                }
             }
         }
     }
 }
 
-async function initializePlugins(pluginDirs, pluginLocPattern = DEFAULT_PLUGIN_LOC_PATTERN) {
-    let plugins = loadPluginsFromEnv(pluginLocPattern);
+async function initializePlugins(pluginDirs, config, pluginLocPattern = DEFAULT_PLUGIN_LOC_PATTERN) {
+    const appRoot = config.appRoot;
+    let plugins = loadPluginsFromEnv(pluginLocPattern, appRoot);
 
     pluginDirs.forEach(directory => {
-        const dirPlugins = loadPluginsFromDir(directory);
+        const resolvedDir = directory.replace('{{app}}', appRoot);
+        const dirPlugins = loadPluginsFromDir(resolvedDir);
         plugins = { ...plugins, ...dirPlugins };
     });
 
@@ -147,8 +151,23 @@ async function initializePlugins(pluginDirs, pluginLocPattern = DEFAULT_PLUGIN_L
         const override = process.env[`ENABLE_PLUGIN_${pluginId}`];
         pluginData.enabled = override ? override === 'true' : defaultEnabled;
 
-        const pluginSettings = loadProperties(path.join(__dirname, '../script-settings', `${pluginId}.properties`));
-        pluginData.env = pluginSettings;
+        // Load plugin-specific environment settings
+        pluginData.envSettings = {};
+        const scriptSettingsDirs = (process.env.SCRIPT_SETTINGS_DIRS || '')
+            .split(',')
+            .map(dir => dir.replace('{{app}}', appRoot))
+            .filter(dir => dir);
+        
+        scriptSettingsDirs.forEach(dir => {
+            const pluginEnvPath = path.join(dir, `${pluginId}.properties`);
+            if (fs.existsSync(pluginEnvPath)) {
+                const envSettings = loadProperties(pluginEnvPath);
+                pluginData.envSettings = { ...pluginData.envSettings, ...envSettings };
+            }
+        });
+
+        // Add to global environment settings
+        config.addEnvSettings(pluginData.envSettings);
 
         if (pluginData.config.commands) {
             pluginData.config.commands.forEach(command => {

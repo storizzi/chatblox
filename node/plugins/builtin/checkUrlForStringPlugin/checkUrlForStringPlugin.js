@@ -38,6 +38,9 @@ const checkUrlForString = async (url, string, retries = URL_CHECK_RETRIES) => {
 
             const matches = text.match(regex);
             if (matches) {
+                if (isDebugMode) {
+                    console.log(`Found matches: ${matches}`);
+                }
                 const result = matches.slice(1); // Capture groups or empty array if no groups
                 return result.length === 1 ? result[0] : result.length === 0 ? true : result;
             } else {
@@ -65,7 +68,7 @@ const getUrlStringCheck = async ({ commandConfig, parameters, baseDir, config })
     const [url, string] = parameters;
     if (isDebugMode) {
         console.log(`Received URL: ${url}`);
-        console.log(`Received String: ${string}`);
+        console.log(`Pattern to check for: ${string}`);
         console.log(`URL Check Retries: ${URL_CHECK_RETRIES}`);
     }
 

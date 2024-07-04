@@ -3,7 +3,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 // Function to load environment variables from .env files
-const loadEnv = () => {
+const loadEnv = (config) => {
     const appRoot = path.resolve(__dirname, '..');
     const userHomeDir = require('os').homedir();
     const workingDir = process.cwd();
@@ -25,6 +25,9 @@ const loadEnv = () => {
     if (fs.existsSync(cwdEnvPath)) {
         dotenv.config({ path: cwdEnvPath });
     }
+
+    // Update config with the loaded environment variables
+    config.addEnvSettings(process.env);
 };
 
 // Function to load properties from .properties files
