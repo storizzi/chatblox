@@ -1,0 +1,21 @@
+{
+    "id": "pluginRepoDownloader",
+    "initialization": {
+        "import": {
+            "fileName": "pluginRepoDownloader.js",
+            "name": "initialize"
+        }
+    },
+    "commands": [
+        {
+            "key": "updatePluginRepos",
+            "regex": "^plugin repo update$",
+            "type": "plugin",
+            "process": "getPluginRepos",
+            "usage": "plugin repo update - Update the list of plugin repositories",
+            "parameters": [],
+            "enabled": true
+        }
+    ],
+    "enabled": true
+}

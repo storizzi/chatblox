@@ -5,3 +5,4 @@ script-settings/*.properties
 !script-settings/*-sample.properties
 */**/package.json
 */**/package-lock.json
+plugin-list.json
